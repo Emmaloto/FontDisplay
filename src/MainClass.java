@@ -2,11 +2,13 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.event.*;
+import javax.swing.plaf.FontUIResource;
 
 // http://www.java2s.com/Tutorial/Java/0261__2D-Graphics/Togetallavailablefontsinyoursystem.htm
 // https://stackoverflow.com/questions/2885173/how-do-i-create-a-file-and-write-to-it-in-java
@@ -19,6 +21,7 @@ public class MainClass extends JComponent implements ActionListener, ListSelecti
 	private String upp, low, sent, numb, sym;
 	
     private JFrame fr = new JFrame();
+    private JFrame load = new JFrame();
     
 	private JButton search, saveList, loadAll, help;
 	private JComboBox <String> version, textSetting;
@@ -27,6 +30,7 @@ public class MainClass extends JComponent implements ActionListener, ListSelecti
 	private JTextField searchBox;
 	private JLabel fontNo, fontNoDesc, sentence, sizeDesc, verDesc, settingDesc;
 	private JPanel bottomPanel, topPanel,topPanel_i, textPanel, fontListPanel, optionsPanel;
+	private JProgressBar bar;
 	
 	private JList<Font> list = new JList<>();
 	private JList<Font> search_list = new JList<>();
@@ -77,8 +81,8 @@ public class MainClass extends JComponent implements ActionListener, ListSelecti
 		fontListPanel.setLayout(cardSetup);	
 		fontListPanel.setBackground(Color.GRAY);
 		
-		list.setCellRenderer(new FontRenderer());
-		search_list.setCellRenderer(new FontRenderer());
+		list.setCellRenderer(new FontRenderer(false));
+		search_list.setCellRenderer(new FontRenderer(false));
 		
 		list.setSelectedIndex(0);
 		search_list.setSelectedIndex(0);
@@ -124,7 +128,7 @@ public class MainClass extends JComponent implements ActionListener, ListSelecti
 		
 		size = new JSlider(10, 50);
 		size.setValue(sentence.getFont().getSize());
-		version = new JComboBox<String>(new String[]{"Full Version N/A", "Lite Version"}); 
+		version = new JComboBox<String>(new String[]{"Full Version", "Lite Version"}); 
 		version.setBackground(Color.WHITE);
 		version.setSelectedIndex(1);
 		textSetting = new JComboBox<String>(new String[]{"Uppercase", "Lowercase", "Sentence","Numbers", "Symbols"});
@@ -133,7 +137,9 @@ public class MainClass extends JComponent implements ActionListener, ListSelecti
 		resizeTextComp(version, 17);
 		resizeTextComp(textSetting, 17);		
 		
-		help = new JButton("N/A", new ImageIcon(aboutIcon));
+		help = new JButton("Hover Info", new ImageIcon(aboutIcon));
+		UIManager.put("ToolTip.font", new FontUIResource("SansSerif", Font.BOLD, 25));	
+		help.setToolTipText("The Full version will take a while to load.");
 
 		
 		// ALL the Panels!
@@ -230,7 +236,16 @@ public class MainClass extends JComponent implements ActionListener, ListSelecti
 		fr.setFocusable(true);
 	    fr.requestFocusInWindow();
 	    
-	    
+
+		/*
+		bar = new JProgressBar();
+		bar.setStringPainted(true);
+		bar.setIndeterminate(true);
+		
+		infoPanel = new JPanel();
+		infoPanel.add(bar);
+		fr.add(infoPanel);
+	    */
 		search.addActionListener(this);
 		saveList.addActionListener(this);	
 		loadAll.addActionListener(this);	
@@ -239,26 +254,42 @@ public class MainClass extends JComponent implements ActionListener, ListSelecti
 		version.addActionListener(this); 
 		textSetting.addActionListener(this);
 		
+		
+		
+	    // Loading Window
+		load.setTitle("Loading Window");
+		load.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);  //Close window on exit
+		load.setSize(400, 150);			
+		load.setLocation(500, 450);
+		bar = new JProgressBar();
+		bar.setStringPainted(false);
+		bar.setIndeterminate(true);
+		bar.setSize(bar.getWidth() + 5, bar.getHeight() + 10);
+		
+		JPanel p = new JPanel();	
+		
+		p.add(new JLabel("LOADING..."));
+		resizeTextComp((JComponent) p.getComponent(0), 30);
+		
+		p.add(bar);			
+		load.add(p, BorderLayout.CENTER);
 	}
 	
-	/*
-    public void paintComponent(Graphics g){
-		//super.paintComponent(g);
-		g.drawImage(bg, 0, 0, fr.getWidth(),fr.getHeight(), this);
-	}
-	*/
 
 	public void actionPerformed(ActionEvent a) {
 		
 		// Buttons
 		if(a.getSource() == saveList){
 			f.printToFile();
+			
 		}else if(a.getSource() == loadAll){
+			//load.dispose();
 			CardLayout cl = (CardLayout)(fontListPanel.getLayout());
 			cl.show(fontListPanel, "Full");	
 			list.setSelectedIndex(0);
 			
 		}else if(a.getSource() == search){
+			//load.setVisible(true);
 			if(searchBox.getText() != ""){				
 				Font [] newList = f.searchFonts(searchBox.getText());
 			
@@ -271,18 +302,14 @@ public class MainClass extends JComponent implements ActionListener, ListSelecti
 				
 				search_list.setSelectedIndex(0);
 			
-			}
-
+			}	
 		}
-		
-		//System.out.println(list.isShowing());
-		//System.out.println(search_list.isShowing());
-		//System.out.println(a.getSource().getClass().toString());
-		
+
 		
 		// Combo Boxes
-		if(a.getSource().getClass().equals(textSetting.getClass())){
-			if(a.getSource() == textSetting)
+		if(a.getSource().getClass().equals(version.getClass())){
+			if(a.getSource() == textSetting){
+				System.out.println(" SETTING");
 				if(textSetting.getSelectedItem() == "Uppercase")
 					sentence.setText(upp);
 				else if(textSetting.getSelectedItem() == "Lowercase")
@@ -293,20 +320,59 @@ public class MainClass extends JComponent implements ActionListener, ListSelecti
 					sentence.setText(numb);
 				else if(textSetting.getSelectedItem() == "Symbols")
 					sentence.setText(sym);
-			
-			else if(a.getSource() == version)
-				if(version.getSelectedItem() == "Full Version"){				
-					list.setCellRenderer(new FontRenderer());
-					search_list.setCellRenderer(new FontRenderer());
+			}
+			else if(a.getSource() == version){
+				System.out.println(" Version");
+				if(version.getSelectedItem() == "Lite Version"){	
+					list.setCellRenderer(new FontRenderer(false));
+					search_list.setCellRenderer(new FontRenderer(false));
+					loadingFrame();
+
 				}else{						
-					list.setCellRenderer(new FontFullRenderer());
-					search_list.setCellRenderer(new FontFullRenderer());
+
+					list.setCellRenderer(new FontRenderer(true));
+					search_list.setCellRenderer(new FontRenderer(true));
+					loadingFrame();
+
 				}
-			
+				// http://www.javacreed.com/swing-worker-example/
+				// https://docs.oracle.com/javase/tutorial/uiswing/components/progress.html
+			}
 		}
 	}
 	
 
+	// The JFrame does not load on time, so this serves no purpose for now.
+	private void loadingFrame(){
+		
+		SwingWorker<Void, Void> loadScreen = new SwingWorker<Void, Void>(){
+
+			
+			@Override
+			protected Void doInBackground() throws Exception {
+
+				System.out.println("WORKING...");
+				//fr.validate();
+				//fr.repaint();
+				fontListPanel.revalidate();
+				
+				return null;
+			}
+			
+			protected void process(List<Void> chunks){
+				super.process(chunks);
+			}
+			
+			protected void done(){
+				load.dispose();
+			}
+		};
+
+		load.setVisible(true);	
+		load.requestFocusInWindow();
+		  loadScreen.execute();
+		
+	}
 	
 
 	public void resizeTextComp(JComponent elt, int newSize){
@@ -366,63 +432,29 @@ public class MainClass extends JComponent implements ActionListener, ListSelecti
 
 
 // This renders all items with their respective fonts
+@SuppressWarnings("serial")
 class FontRenderer extends JLabel implements ListCellRenderer<Font>{
 
-	JLabel test;
 	private Border border;
+	private boolean fullRender;
 	
-	
-	public Component getListCellRendererComponent(JList<? extends Font> l, Font val, int index, boolean isSelected, boolean cellHasFocus) {
-		
-		setOpaque(true);
-		border = BorderFactory.createLineBorder(Color.BLUE, 1);
-		
-		//Font f = new Font(val.getFontName(), val.getStyle(), 20);
-		Font f = new Font(l.getFont().getFontName(), l.getFont().getStyle(), 20);
-		setFont(f);
-
-		
-		setText(val.getFontName());
-		
-	    if(isSelected){
-	       setBackground(l.getSelectionBackground());
-	       setForeground(l.getSelectionForeground());
-	    }else{	    	
-	        setBackground(l.getBackground());
-	        setForeground(l.getForeground());
-	     }
-
-	    setEnabled(l.isEnabled());
-
-	    if (isSelected && cellHasFocus)
-	    	setBorder(border);
-	    else
-	       setBorder(null);
-	    
-	    
-		return this;
+	FontRenderer(boolean f){
+		fullRender = f;
 	}
-
-
-	
-} 
-
-// 	This renderer renders the list items with their respective fonts
-//  Not yet in use
-class FontFullRenderer extends JLabel implements ListCellRenderer<Font>{
-
-	JLabel test;
-	private Border border;
-	
 	
 	public Component getListCellRendererComponent(JList<? extends Font> l, Font val, int index, boolean isSelected, boolean cellHasFocus) {
 		
 		setOpaque(true);
 		border = BorderFactory.createLineBorder(Color.BLUE, 1);
 		
-		Font f = new Font(val.getFontName(), val.getStyle(), 20);
-		//Font f = new Font(l.getFont().getFontName(), l.getFont().getStyle(), 20);
-		setFont(f);
+		Font use;
+		
+		if(fullRender)
+			 use = new Font(val.getFontName(), val.getStyle(), 20);
+		else
+			 use = new Font(l.getFont().getFontName(), l.getFont().getStyle(), 20);
+		
+		setFont(use);
 
 		
 		setText(val.getFontName());
