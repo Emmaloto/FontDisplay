@@ -16,7 +16,7 @@ import javax.swing.plaf.FontUIResource;
 @SuppressWarnings("serial")
 public class MainClass extends JComponent implements ActionListener, ListSelectionListener, ChangeListener {
 	
-	@SuppressWarnings("unused")
+	
 	private Image fileIcon, listIcon, searchIcon, aboutIcon, bg;
 	private String upp, low, sent, numb, sym;
 	
@@ -36,10 +36,14 @@ public class MainClass extends JComponent implements ActionListener, ListSelecti
 	private JList<Font> search_list = new JList<>();
 	private DefaultListModel<Font> model;
 	
+	//private Screen helpScreen;
+	private ScreenDisplay helpWindow;
+	private String[] helpText;
+	
 	private FontList f = new FontList();
 	
 	
-	Font [] test = new Font[1];
+	//Font [] test = new Font[1];
 	
 	public static void main(String[] args) {
 		new MainClass();
@@ -137,7 +141,7 @@ public class MainClass extends JComponent implements ActionListener, ListSelecti
 		resizeTextComp(version, 17);
 		resizeTextComp(textSetting, 17);		
 		
-		help = new JButton("Hover Info", new ImageIcon(aboutIcon));
+		help = new JButton("", new ImageIcon(aboutIcon));
 		UIManager.put("ToolTip.font", new FontUIResource("SansSerif", Font.BOLD, 25));	
 		help.setToolTipText("The Full version will take a while to load.");
 
@@ -172,12 +176,7 @@ public class MainClass extends JComponent implements ActionListener, ListSelecti
 		
 		// Middle Options Panel
 		optionsPanel = new JPanel();
-		//optionsPanel.setBackground(Color.WHITE);
-		//optionsPanel.setLayout(new BoxLayout(optionsPanel, BoxLayout.LINE_AXIS));
-		//optionsPanel.setLayout(new GridLayout(1, 3));
-		//optionsPanel.setLayout(new FlowLayout(0, 30, FlowLayout.CENTER));
-		//optionsPanel.add(Box.createRigidArea(new Dimension(10, 0))); //*
-		
+
 		optionsPanel.add(help); 
 		
 		JPanel sub1 = new JPanel();
@@ -249,6 +248,7 @@ public class MainClass extends JComponent implements ActionListener, ListSelecti
 		search.addActionListener(this);
 		saveList.addActionListener(this);	
 		loadAll.addActionListener(this);	
+		help.addActionListener(this);
 		
 		size.addChangeListener(this);
 		version.addActionListener(this); 
@@ -257,7 +257,7 @@ public class MainClass extends JComponent implements ActionListener, ListSelecti
 		
 		
 	    // Loading Window
-		load.setTitle("Loading Window");
+		load.setTitle("Loading Window...");
 		load.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);  //Close window on exit
 		load.setSize(400, 150);			
 		load.setLocation(500, 450);
@@ -273,6 +273,11 @@ public class MainClass extends JComponent implements ActionListener, ListSelecti
 		
 		p.add(bar);			
 		load.add(p, BorderLayout.CENTER);
+		
+		
+		// Help Window
+		helpWindow = new ScreenDisplay("HELP INFORMATION", bg, helpText);
+		//helpWindow.displayWindow();
 	}
 	
 
@@ -303,13 +308,15 @@ public class MainClass extends JComponent implements ActionListener, ListSelecti
 				search_list.setSelectedIndex(0);
 			
 			}	
+		}else if(a.getSource() == help){
+			helpWindow.displayWindow();
 		}
 
 		
 		// Combo Boxes
 		if(a.getSource().getClass().equals(version.getClass())){
 			if(a.getSource() == textSetting){
-				System.out.println(" SETTING");
+				
 				if(textSetting.getSelectedItem() == "Uppercase")
 					sentence.setText(upp);
 				else if(textSetting.getSelectedItem() == "Lowercase")
@@ -414,6 +421,14 @@ public class MainClass extends JComponent implements ActionListener, ListSelecti
 			aboutIcon = ImageIO.read(this.getClass().getResource("icons/about.png"));
 			
 			bg = ImageIO.read(this.getClass().getResource("icons/background.jpg"));
+			
+			GameUtilities.fileExists("src/help.txt");
+			helpText = GameUtilities.getInputFromFile("help.txt", this);
+			
+			if(helpText == null){ 
+				helpText = new String[1];
+				helpText[0] = "Look at my Github page (Emmaloto) for more help.";
+			}
 		} catch (IOException e) {
 			
 			e.printStackTrace();

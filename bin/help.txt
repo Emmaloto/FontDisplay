@@ -1,0 +1,20 @@
+
+    This program gives a simple view of all the fonts on a machine (at least all the ones accessible to Java). 
+Here are the features:
+
+ - You can search through fonts using the searchbar at the top right of the application.
+ 
+ - You can save the list of fonts to a file with the 'Save List' button. They will be saved into a file named 
+   "font-list.txt" located where this application was run from.
+  
+ - You can reload the list of fonts using the 'Show List' when you're done searching.
+   
+ - You can change different properties of the sample text at the top of the page like its size and case.
+   
+ - You can also switch between the full and lite versions of the app. The LITE version (default) displays 
+   all the fonts in the same font. The FULL version renders each font name with its respective font.
+   The full version takes MUCH longer to load, and all fonts may not be rendered correctly. However, it's 
+   the best option to see and compare all of the fonts easily.
+   
+   Any complaints and requests can be made to me at icyblaze16@gmail.com.
+   I hope you find this app useful!
